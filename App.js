@@ -12,6 +12,7 @@ import {
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import './backgroundTask'; // Import to register the background task
 
 const SERVER_URL = 'https://5b70e398-26eb-4d7d-9586-6be5b65229cd-00-3gcmy6q53pmg4.worf.replit.dev';
 
@@ -105,7 +106,7 @@ export default function App() {
       );
 
       // Native background tracking - REAL implementation
-      const trackingId = await Location.startLocationUpdatesAsync(
+      await Location.startLocationUpdatesAsync(
         'BNBKIT_BACKGROUND_TASK',
         {
           accuracy: Location.Accuracy.BestForNavigation,
@@ -119,7 +120,7 @@ export default function App() {
         }
       );
 
-      console.log('🚀 Native background tracking started:', trackingId);
+      console.log('🚀 Native background tracking started');
 
       // Also setup foreground tracking for UI updates
       const foregroundTracking = () => {
@@ -142,6 +143,9 @@ export default function App() {
 
       // UI update interval
       const intervalId = setInterval(foregroundTracking, 15000);
+
+      // Store interval ID for cleanup
+      await AsyncStorage.setItem('trackingIntervalId', intervalId.toString());
 
       // Auto-stop after 30 minutes for demo
       setTimeout(async () => {
@@ -167,6 +171,14 @@ export default function App() {
   const stopTracking = async () => {
     try {
       await Location.stopLocationUpdatesAsync('BNBKIT_BACKGROUND_TASK');
+      
+      // Clear any stored interval
+      const intervalId = await AsyncStorage.getItem('trackingIntervalId');
+      if (intervalId) {
+        clearInterval(parseInt(intervalId));
+        await AsyncStorage.removeItem('trackingIntervalId');
+      }
+      
       setIsTracking(false);
       setStatus('🛑 GPS nativo fermato');
       Alert.alert('GPS Fermato', 'Tracciamento nativo interrotto.');
