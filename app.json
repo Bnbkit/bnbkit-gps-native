@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "BNBKit GPS Tracker",
-    "slug": "bnbkit-gps-tracker",
+    "name": "BNBKit Driver Tracker",
+    "slug": "bnbkit-driver-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "image": "./assets/icon.png",
+      "resizeMode": "contain", 
       "backgroundColor": "#e83c7b"
     },
     "assetBundlePatterns": [
@@ -16,50 +16,34 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.bnbkit.gpstracker",
+      "bundleIdentifier": "com.bnbkit.drivertracker",
       "infoPlist": {
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "BNBKit GPS Tracker needs location access to track delivery routes in background",
-        "NSLocationWhenInUseUsageDescription": "BNBKit GPS Tracker needs location access to track your current position",
-        "NSLocationAlwaysUsageDescription": "BNBKit GPS Tracker needs always location access for background tracking during deliveries",
-        "UIBackgroundModes": [
-          "location"
-        ]
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "BNBKit needs location access to track delivery routes and provide real-time updates to customers.",
+        "NSLocationWhenInUseUsageDescription": "BNBKit needs location access to track delivery routes.",
+        "UIBackgroundModes": ["location"]
       }
     },
     "android": {
+      "package": "com.bnbkit.drivertracker",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#e83c7b"
+        "backgroundColor": "#E91E63"
       },
-      "package": "com.bnbkit.gpstracker",
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_LOCATION"
+        "ACCESS_BACKGROUND_LOCATION"
       ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "BNBKit GPS Tracker needs location access to track delivery routes in background",
-          "locationAlwaysPermission": "BNBKit GPS Tracker needs always location access for background tracking during deliveries",
-          "locationWhenInUsePermission": "BNBKit GPS Tracker needs location access to track your current position",
+          "locationAlwaysAndWhenInUsePermission": "Allow BNBKit to use your location for delivery tracking.",
           "isIosBackgroundLocationEnabled": true,
-          "isAndroidBackgroundLocationEnabled": true,
-          "isAndroidForegroundServiceEnabled": true
+          "isAndroidBackgroundLocationEnabled": true
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "e4ba3508-618c-42f6-b8d1-eb340669ec73"
-      }
-    }
+    ]
   }
 }
