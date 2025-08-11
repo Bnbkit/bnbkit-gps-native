@@ -5,16 +5,20 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       node: v18.17.0
+      EXPO_TOKEN: $EXPO_TOKEN
     scripts:
       - name: Install dependencies
         script: |
           npm install
-          npm install -g @expo/cli@latest
+          npm install -g @expo/cli@latest eas-cli@latest
       - name: Build Android APK
         script: |
-          npx expo build:android --type apk --no-publish --clear-cache
+          # Metodo alternativo: usa npx create-expo-app per build locale
+          npx @expo/ngrok@^4.1.0 --version
+          npx expo prebuild --platform android --clear
+          cd android && ./gradlew assembleRelease
     artifacts:
-      - "*.apk"
+      - android/app/build/outputs/apk/release/*.apk
     publishing:
       email:
         recipients:
