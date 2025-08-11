@@ -9,17 +9,15 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal", 
+      "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       }
     },
     "production": {
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "NODE_ENV": "production"
       }
     }
   },
