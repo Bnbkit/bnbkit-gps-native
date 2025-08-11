@@ -1,18 +1,11 @@
 {
   "cli": {
-    "version": ">= 5.2.0",
-    "appVersionSource": "remote"
+    "version": ">= 7.8.0"
   },
   "build": {
     "development": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleDebug"
-      },
-      "env": {
-        "NODE_ENV": "development"
-      }
+      "developmentClient": true,
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
@@ -22,8 +15,11 @@
     },
     "production": {
       "android": {
-        "buildType": "apk"
+        "buildType": "aab"
       }
     }
+  },
+  "submit": {
+    "production": {}
   }
 }
