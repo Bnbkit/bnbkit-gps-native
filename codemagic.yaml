@@ -1,25 +1,16 @@
-workflows:
-  react-native-android:
-    name: React Native Android
-    max_build_duration: 120
-    instance_type: mac_mini_m1
-    environment:
-      node: v18.17.0
-    scripts:
-      - name: Install dependencies
-        script: |
-          npm install
-          npm install -g @expo/cli@latest eas-cli@latest
-      - name: Build Android APK
-        script: |
-          npx expo prebuild --platform android --clear
-          cd android && ./gradlew assembleRelease
-    artifacts:
-      - android/app/build/outputs/apk/release/*.apk
-    publishing:
-      email:
-        recipients:
-          - build@bnbkit.com
-        notify:
-          success: true
-          failure: false
+#!/usr/bin/env bash
+
+npx expo prebuild --platform android --clear
+cd android && ./gradlew assembleRelease
+unknown or unexpected option: --clear
+/var/folders/w2/rrf5p87d1bbfyphxc7jdnyvh0000gn/T/build_script_3_1_zg3_otvq: line 4: cd: android: No such file or directory
+
+
+Build failed :|
+Step 3 script `Build Android APK` exited with status code 1
+unknown or unexpected option: --clear
+/var/folders/w2/rrf5p87d1bbfyphxc7jdnyvh0000gn/T/build_script_3_1_zg3_otvq: line 4: cd: android: No such file or directory
+
+
+Build failed :|
+Step 3 script `Build Android APK` exited with status code 1
