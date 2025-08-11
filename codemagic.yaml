@@ -6,15 +6,19 @@ workflows:
     environment:
       node: v18.17.0
     scripts:
-      - name: Install npm dependencies
+      - name: Install dependencies
         script: |
           npm install
-      - name: Set up Expo
-        script: |
           npm install -g @expo/cli@latest
-          npx expo install --fix
       - name: Build Android APK
         script: |
-          npx expo run:android --variant release
+          npx expo build:android --type apk --no-publish --clear-cache
     artifacts:
-      - android/app/build/outputs/**/*.apk
+      - "*.apk"
+    publishing:
+      email:
+        recipients:
+          - build@bnbkit.com
+        notify:
+          success: true
+          failure: false
