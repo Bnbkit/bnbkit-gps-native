@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
+import * as TaskManager from 'expo-task-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import './backgroundTask'; // Import to register the background task
+import { BACKGROUND_LOCATION_TASK } from './backgroundTask';
 
 const SERVER_URL = 'https://5b70e398-26eb-4d7d-9586-6be5b65229cd-00-3gcmy6q53pmg4.worf.replit.dev';
 
@@ -20,6 +21,19 @@ export default function App() {
   const [location, setLocation] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
   const [status, setStatus] = useState('🚀 Pronto per GPS nativo!');
+
+  // Check if background task is running on app start
+  useEffect(() => {
+    checkBackgroundStatus();
+  }, []);
+
+  const checkBackgroundStatus = async () => {
+    const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_LOCATION_TASK);
+    if (isRegistered) {
+      setIsTracking(true);
+      setStatus('📍 GPS background già attivo!');
+    }
+  };
 
   const sendPosition = async (coords) => {
     try {
@@ -67,6 +81,7 @@ export default function App() {
       const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
       if (foregroundStatus !== 'granted') {
         Alert.alert('Permessi GPS', 'Concedi i permessi per continuare.');
+        setStatus('❌ Permessi negati');
         return;
       }
 
@@ -81,85 +96,55 @@ export default function App() {
         // Continue anyway - user might grant later
       }
 
-      setIsTracking(true);
-      setStatus('🚀 GPS NATIVO ATTIVO!');
-
       // Get initial position
       const initialLoc = await getLocationOnce();
       if (initialLoc) {
         setLocation(initialLoc);
         await sendPosition(initialLoc.coords);
-        setStatus('✅ GPS nativo collegato!');
       }
 
+      // Start REAL background tracking
+      await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
+        accuracy: Location.Accuracy.BestForNavigation,
+        timeInterval: 15000, // 15 seconds
+        distanceInterval: 10, // 10 meters
+        foregroundService: {
+          notificationTitle: 'BNBKit GPS Tracker',
+          notificationBody: 'Tracking posizione per consegne',
+          notificationColor: '#e83c7b'
+        },
+        deferredUpdatesInterval: 0,
+        deferredUpdatesDistance: 0,
+        showsBackgroundLocationIndicator: true,
+      });
+
+      setIsTracking(true);
+      setStatus('✅ GPS nativo collegato!');
+      
       Alert.alert(
         '🎉 GPS NATIVO ATTIVATO!',
         'Questa è una VERA APP NATIVA!\n\n✅ GPS BACKGROUND NATIVO\n✅ NESSUN LIMITE BROWSER\n✅ PERFORMANCE COMPLETE\n\nPer testare:\n1. Chiudi COMPLETAMENTE l\'app\n2. Cammina per 5 minuti\n3. Apri mappa BNBKit su computer\n4. Cerca "NATIVE_APP"\n5. Il punto si muove!\n\nQUESTO È GPS NATIVO VERO!',
-        [
-          {
-            text: 'Fantastico!',
-            onPress: () => {
-              setStatus('🎯 Chiudi app per test nativo!');
-            }
-          }
-        ]
-      );
-
-      // Native background tracking - REAL implementation
-      await Location.startLocationUpdatesAsync(
-        'BNBKIT_BACKGROUND_TASK',
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          timeInterval: 15000, // 15 seconds
-          distanceInterval: 10, // 10 meters
-          foregroundService: {
-            notificationTitle: 'BNBKit GPS Tracker',
-            notificationBody: 'Tracking posizione per consegne',
-            notificationColor: '#e83c7b'
-          }
-        }
+        [{ text: 'Fantastico!' }]
       );
 
       console.log('🚀 Native background tracking started');
 
-      // Also setup foreground tracking for UI updates
-      const foregroundTracking = () => {
+      // Setup foreground tracking for UI updates only
+      const intervalId = setInterval(async () => {
         if (!isTracking) return;
         
-        getLocationOnce().then(async loc => {
-          if (loc && isTracking) {
-            setLocation(loc);
-            await sendPosition(loc.coords);
-            console.log('📍 Native GPS update:', {
-              lat: loc.coords.latitude.toFixed(6),
-              lng: loc.coords.longitude.toFixed(6),
-              accuracy: loc.coords.accuracy
-            });
-          }
-        }).catch(err => {
-          console.log('Tracking error:', err);
-        });
-      };
-
-      // UI update interval
-      const intervalId = setInterval(foregroundTracking, 15000);
+        const loc = await getLocationOnce();
+        if (loc) {
+          setLocation(loc);
+          console.log('📍 UI update:', {
+            lat: loc.coords.latitude.toFixed(6),
+            lng: loc.coords.longitude.toFixed(6)
+          });
+        }
+      }, 15000);
 
       // Store interval ID for cleanup
-      await AsyncStorage.setItem('trackingIntervalId', intervalId.toString());
-
-      // Auto-stop after 30 minutes for demo
-      setTimeout(async () => {
-        clearInterval(intervalId);
-        await Location.stopLocationUpdatesAsync('BNBKIT_BACKGROUND_TASK');
-        setIsTracking(false);
-        setStatus('✅ Test nativo completato');
-        
-        Alert.alert(
-          '✅ Test Nativo Completato!',
-          'GPS nativo ha funzionato per 30 minuti.\n\nSe hai visto "NATIVE_APP" muoversi sulla mappa con app chiusa, il GPS nativo è PERFETTO!\n\nBNBKit è pronto per produzione.',
-          [{ text: 'Eccellente!' }]
-        );
-      }, 1800000); // 30 minutes
+      await AsyncStorage.setItem('uiIntervalId', intervalId.toString());
 
     } catch (error) {
       Alert.alert('Errore GPS Nativo', 'Impossibile avviare: ' + error.message);
@@ -170,19 +155,24 @@ export default function App() {
 
   const stopTracking = async () => {
     try {
-      await Location.stopLocationUpdatesAsync('BNBKIT_BACKGROUND_TASK');
+      // Stop background location updates
+      const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_LOCATION_TASK);
+      if (isRegistered) {
+        await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+      }
       
-      // Clear any stored interval
-      const intervalId = await AsyncStorage.getItem('trackingIntervalId');
+      // Clear UI update interval
+      const intervalId = await AsyncStorage.getItem('uiIntervalId');
       if (intervalId) {
         clearInterval(parseInt(intervalId));
-        await AsyncStorage.removeItem('trackingIntervalId');
+        await AsyncStorage.removeItem('uiIntervalId');
       }
       
       setIsTracking(false);
       setStatus('🛑 GPS nativo fermato');
       Alert.alert('GPS Fermato', 'Tracciamento nativo interrotto.');
     } catch (error) {
+      console.error('Error stopping tracking:', error);
       setIsTracking(false);
       setStatus('🛑 Fermato');
     }
@@ -237,9 +227,9 @@ export default function App() {
           </View>
 
           <View style={styles.statusRow}>
-            <Text style={styles.label}>Limitazioni Browser:</Text>
+            <Text style={styles.label}>Task Manager:</Text>
             <Text style={[styles.badge, {color: '#22c55e'}]}>
-              ✅ NESSUNA
+              ✅ CONFIGURATO
             </Text>
           </View>
         </View>
@@ -306,6 +296,21 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
+        {/* Check Background Status */}
+        <TouchableOpacity
+          style={[styles.secondaryButton, {backgroundColor: '#10b981', marginBottom: 16}]}
+          onPress={async () => {
+            const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_LOCATION_TASK);
+            Alert.alert(
+              'Background Task Status',
+              `Task registrato: ${isRegistered ? 'SÌ ✅' : 'NO ❌'}\nTracking attivo: ${isTracking ? 'SÌ ✅' : 'NO ❌'}`
+            );
+          }}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.secondaryText}>🔍 Verifica Background Task</Text>
+        </TouchableOpacity>
+
         {/* Native Instructions */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>📋 Test App Nativa</Text>
@@ -318,9 +323,9 @@ export default function App() {
             6. Apri mappa BNBKit su computer{'\n'}
             7. Cerca "NATIVE_APP" sulla mappa{'\n\n'}
             ✅ Se il punto si muove = GPS nativo OK!{'\n\n'}
-            🎯 DIFFERENZA vs Expo Go:{'\n'}
-            • Expo Go: Solo preview con limiti{'\n'}
-            • App Nativa: GPS background VERO
+            🎯 DIFFERENZA vs Web App:{'\n'}
+            • Web App: GPS si ferma in background{'\n'}
+            • App Nativa: GPS SEMPRE attivo
           </Text>
         </View>
 
@@ -330,11 +335,11 @@ export default function App() {
             <Text style={styles.successTitle}>🎉 GPS NATIVO ATTIVO!</Text>
             <Text style={styles.successText}>
               APP NATIVA con GPS background VERO!{'\n\n'}
-              ✅ NESSUN limite browser{'\n'}
-              ✅ Performance native complete{'\n'}
+              ✅ Task Manager attivo{'\n'}
+              ✅ Background location updates{'\n'}
               ✅ GPS funziona con app chiusa{'\n\n'}
               CHIUDI L'APP PER TESTARE!{'\n\n'}
-              Test: 30 minuti automatici.
+              Il GPS continuerà a funzionare!
             </Text>
           </View>
         )}
@@ -343,10 +348,10 @@ export default function App() {
         <View style={styles.benefitsCard}>
           <Text style={styles.benefitsTitle}>🏆 Vantaggi App Nativa</Text>
           <Text style={styles.benefitsText}>
-            ✅ GPS background VERO (non browser){'\n'}
+            ✅ GPS background VERO (TaskManager){'\n'}
             ✅ Zero freeze o limitazioni{'\n'}
-            ✅ Permessi nativi completi{'\n'}
-            ✅ Performance ottimali{'\n'}
+            ✅ Notifica persistente del servizio{'\n'}
+            ✅ Performance native complete{'\n'}
             ✅ Installabile sulla home{'\n'}
             ✅ Pronta per Play Store/App Store
           </Text>
