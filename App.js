@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BACKGROUND_LOCATION_TASK } from './backgroundTask';
 
 const SERVER_URL = 'https://5b70e398-26eb-4d7d-9586-6be5b65229cd-00-3gcmy6q53pmg4.worf.replit.dev';
-
+ 
 export default function App() {
   const [location, setLocation] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
