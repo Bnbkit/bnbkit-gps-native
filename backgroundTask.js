@@ -1,11 +1,11 @@
 import * as TaskManager from 'expo-task-manager';
 import * as Location from 'expo-location';
 
-const LOCATION_TASK_NAME = 'BNBKIT_BACKGROUND_TASK';
+const BACKGROUND_LOCATION_TASK = 'BNBKitBackgroundLocation';
 const SERVER_URL = 'https://5b70e398-26eb-4d7d-9586-6be5b65229cd-00-3gcmy6q53pmg4.worf.replit.dev';
 
-// Define the background task
-TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
+// Define the background task - QUESTO È FONDAMENTALE!
+TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
   if (error) {
     console.error('Background location task error:', error);
     return;
@@ -42,4 +42,4 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   }
 });
 
-export { LOCATION_TASK_NAME };
+export { BACKGROUND_LOCATION_TASK };
