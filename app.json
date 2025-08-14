@@ -1,0 +1,69 @@
+{
+  "expo": {
+    "name": "BNBKit Driver Tracker",
+    "slug": "bnbkit-driver-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain", 
+      "backgroundColor": "#e83c7b"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bnbkit.drivertracker",
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "BNBKit needs continuous location access to track delivery routes in real-time and provide accurate updates to customers, even when the app is in the background.",
+        "NSLocationWhenInUseUsageDescription": "BNBKit needs location access to track your current position during deliveries.",
+        "NSLocationAlwaysUsageDescription": "BNBKit needs location access to continue tracking your delivery route when the app is in the background.",
+        "UIBackgroundModes": ["location", "fetch", "remote-notification"],
+        "BGTaskSchedulerPermittedIdentifiers": ["BNBKitBackgroundLocation"]
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.bnbkit.drivertracker",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#e83c7b"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "WAKE_LOCK"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "BNBKit uses your location to track deliveries and provide real-time updates to customers.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "af8c3247-6228-4424-926e-8e649555d675"
+      }
+    }
+  }
+}

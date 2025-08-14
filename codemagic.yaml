@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+npx expo prebuild --platform android --clear
+cd android && ./gradlew assembleRelease
+unknown or unexpected option: --clear
+/var/folders/w2/rrf5p87d1bbfyphxc7jdnyvh0000gn/T/build_script_3_1_zg3_otvq: line 4: cd: android: No such file or directory
+
+
+Build failed :|
+Step 3 script `Build Android APK` exited with status code 1
+unknown or unexpected option: --clear
+/var/folders/w2/rrf5p87d1bbfyphxc7jdnyvh0000gn/T/build_script_3_1_zg3_otvq: line 4: cd: android: No such file or directory
+
+
+Build failed :|
+Step 3 script `Build Android APK` exited with status code 1
